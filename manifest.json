@@ -2,7 +2,7 @@
   "name": "Chi Tiêu",
   "short_name": "Chi Tiêu",
   "description": "Theo dõi chi tiêu cá nhân",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#F7F8FC",
   "theme_color": "#6C63FF",

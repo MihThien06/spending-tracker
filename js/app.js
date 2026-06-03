@@ -332,7 +332,7 @@ function refreshCurrentTab() {
 // Đăng ký Service Worker cho PWA
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
+    navigator.serviceWorker.register('./service-worker.js')
       .catch(err => console.error('SW error:', err));
   });
 }
