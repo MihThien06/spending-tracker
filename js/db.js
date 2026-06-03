@@ -1,29 +1,26 @@
-// db.js — Quản lý lưu trữ dữ liệu bằng IndexedDB
-// Lý do dùng IndexedDB thay localStorage:
-//   - Lưu được nhiều dữ liệu hơn (localStorage giới hạn ~5MB)
-//   - Hỗ trợ query theo ngày, không cần load hết
-//   - Bất đồng bộ, không làm đơ giao diện
+// ── GROUPS STORE ──
+// Quản lý nhóm/sự kiện chi tiêu
 
-const DB_NAME    = 'SpendingTrackerDB';
-const DB_VERSION = 1;
-const STORE_NAME = 'expenses';
+const GROUP_STORE = 'groups';
 
-// Mở kết nối database — chạy 1 lần khi load app
+// Cần upgrade DB version để thêm store mới
+// Sửa dòng: const DB_VERSION = 1;  →  const DB_VERSION = 2;
+// Và thêm vào onupgradeneeded:
+
+// QUAN TRỌNG: Tìm hàm openDB() trong db.js và thay toàn bộ bằng:
 function openDB() {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    const request = indexedDB.open(DB_NAME, 2); // <-- version 2
 
-    // Chạy khi tạo database lần đầu hoặc nâng version
     request.onupgradeneeded = (event) => {
       const db = event.target.result;
       if (!db.objectStoreNames.contains(STORE_NAME)) {
-        // Tạo bảng 'expenses', mỗi record có id tự tăng
-        const store = db.createObjectStore(STORE_NAME, {
-          keyPath: 'id',
-          autoIncrement: true
-        });
-        // Tạo index để query nhanh theo ngày
+        const store = db.createObjectStore(STORE_NAME, { keyPath:'id', autoIncrement:true });
         store.createIndex('date', 'date', { unique: false });
+      }
+      // Store mới cho nhóm
+      if (!db.objectStoreNames.contains(GROUP_STORE)) {
+        db.createObjectStore(GROUP_STORE, { keyPath:'id', autoIncrement:true });
       }
     };
 
@@ -32,52 +29,36 @@ function openDB() {
   });
 }
 
-// THÊM khoản chi mới
-async function addExpense(expense) {
+async function getAllGroups() {
   const db = await openDB();
   return new Promise((resolve, reject) => {
-    const tx    = db.transaction(STORE_NAME, 'readwrite');
-    const store = tx.objectStore(STORE_NAME);
-    // Lưu timestamp dạng ISO string để dễ so sánh
-    expense.date = new Date().toISOString();
-    const req = store.add(expense);
-    req.onsuccess = () => resolve(req.result); // trả về id mới
-    req.onerror   = () => reject(req.error);
-  });
-}
-
-// LẤY TẤT CẢ khoản chi (dùng cho lịch sử và tổng kết)
-async function getAllExpenses() {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx    = db.transaction(STORE_NAME, 'readonly');
-    const store = tx.objectStore(STORE_NAME);
-    const req   = store.getAll();
+    const tx = db.transaction(GROUP_STORE, 'readonly');
+    const req = tx.objectStore(GROUP_STORE).getAll();
     req.onsuccess = () => resolve(req.result);
     req.onerror   = () => reject(req.error);
   });
 }
 
-// XÓA khoản chi theo id
-async function deleteExpense(id) {
+async function addGroup(group) {
   const db = await openDB();
   return new Promise((resolve, reject) => {
-    const tx    = db.transaction(STORE_NAME, 'readwrite');
-    const store = tx.objectStore(STORE_NAME);
-    const req   = store.delete(id);
-    req.onsuccess = () => resolve();
+    const tx  = db.transaction(GROUP_STORE, 'readwrite');
+    const req = tx.objectStore(GROUP_STORE).add(group);
+    req.onsuccess = () => resolve(req.result);
     req.onerror   = () => reject(req.error);
   });
 }
 
-// CẬP NHẬT khoản chi đã có
-async function updateExpense(expense) {
-  const db = await openDB();
+async function deleteGroup(id) {
+  const db  = await openDB();
+  const all = await getAllExpenses();
+  // Xoá tất cả expense thuộc nhóm trước
+  const toDelete = all.filter(e => e.groupId === id);
+  for (const e of toDelete) await deleteExpense(e.id);
+  // Xoá nhóm
   return new Promise((resolve, reject) => {
-    const tx    = db.transaction(STORE_NAME, 'readwrite');
-    const store = tx.objectStore(STORE_NAME);
-    // Giữ nguyên date gốc, chỉ cập nhật amount/category/note
-    const req = store.put(expense);
+    const tx  = db.transaction(GROUP_STORE, 'readwrite');
+    const req = tx.objectStore(GROUP_STORE).delete(id);
     req.onsuccess = () => resolve();
     req.onerror   = () => reject(req.error);
   });

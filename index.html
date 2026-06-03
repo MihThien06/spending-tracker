@@ -2,133 +2,179 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <!-- Quan trọng: làm cho trang hiển thị đúng trên mobile -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#6C63FF" />
-
-  <!-- Khai báo PWA -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
-
   <link rel="stylesheet" href="css/style.css" />
   <title>Chi Tiêu</title>
 </head>
 <body>
 
-  <!-- MÀN HÌNH KHÓA: hiện khi mở app, yêu cầu xác thực -->
-  <div id="lock-screen" class="screen active">
-    <div class="lock-content">
-      <div class="app-icon">💰</div>
-      <h1>Chi Tiêu</h1>
-      <p>Nhấn để mở khóa</p>
-      <button id="unlock-btn" class="btn-primary">🔒 Mở khóa</button>
+  <!-- ====== MÀN HÌNH CHỌN MODE ====== -->
+  <div id="screen-home" class="screen active">
+    <div class="home-wrap">
+      <div class="home-logo">💰</div>
+      <h1 class="home-title">Chi Tiêu</h1>
+      <p class="home-sub">Chọn chế độ sử dụng</p>
+
+      <button class="mode-card" id="btn-personal">
+        <span class="mode-icon">👤</span>
+        <div class="mode-info">
+          <strong>Cá nhân</strong>
+          <small>Theo dõi chi tiêu hàng ngày của bạn</small>
+        </div>
+        <span class="mode-arrow">›</span>
+      </button>
+
+      <button class="mode-card" id="btn-group">
+        <span class="mode-icon">👥</span>
+        <div class="mode-info">
+          <strong>Nhóm / Sự kiện</strong>
+          <small>Tạo ví riêng cho từng chuyến đi, sự kiện</small>
+        </div>
+        <span class="mode-arrow">›</span>
+      </button>
     </div>
   </div>
 
-  <!-- MÀN HÌNH CHÍNH -->
-  <div id="main-screen" class="screen">
+  <!-- ====== MÀN HÌNH QUẢN LÝ NHÓM ====== -->
+  <div id="screen-groups" class="screen">
+    <div class="topbar">
+      <button class="btn-back" id="back-from-groups">‹</button>
+      <h2>Nhóm của tôi</h2>
+      <button class="btn-text" id="btn-new-group">+ Tạo</button>
+    </div>
+    <div class="list-wrap" id="groups-list">
+      <p class="empty-state">Chưa có nhóm nào<br><small>Nhấn "+ Tạo" để bắt đầu</small></p>
+    </div>
+  </div>
 
-    <!-- THANH ĐIỀU HƯỚNG dưới cùng -->
+  <!-- ====== MÀN HÌNH CHÍNH (PERSONAL hoặc GROUP) ====== -->
+  <div id="screen-main" class="screen">
+
     <nav class="bottom-nav">
       <button class="nav-btn active" data-tab="today">
-        <span>📋</span><small>Hôm nay</small>
+        <i class="nav-icon">📋</i><small>Hôm nay</small>
       </button>
       <button class="nav-btn" data-tab="summary">
-        <span>📊</span><small>Tổng kết</small>
+        <i class="nav-icon">📊</i><small>Tổng kết</small>
       </button>
       <button class="nav-btn" data-tab="history">
-        <span>🗓️</span><small>Lịch sử</small>
+        <i class="nav-icon">🗓</i><small>Lịch sử</small>
       </button>
     </nav>
 
     <!-- TAB: HÔM NAY -->
-    <div id="tab-today" class="tab-content active">
-      <header class="page-header">
-        <h2>Hôm nay</h2>
-        <span id="today-date" class="date-label"></span>
-      </header>
+    <div id="tab-today" class="tab active">
+      <div class="topbar">
+        <button class="btn-back" id="back-from-main">‹</button>
+        <div class="topbar-center">
+          <h2 id="main-title">Chi tiêu</h2>
+          <span id="today-date" class="topbar-sub"></span>
+        </div>
+        <div style="width:40px"></div>
+      </div>
 
-      <!-- Tổng hôm nay -->
       <div class="total-card">
-        <p class="total-label">Tổng chi hôm nay</p>
-        <p class="total-amount" id="today-total">0 ₫</p>
+        <p class="total-lbl">Hôm nay</p>
+        <p class="total-amt" id="today-total">0 ₫</p>
       </div>
 
-      <!-- Danh sách khoản chi hôm nay -->
-      <div class="expense-list" id="today-list">
-        <p class="empty-state">Chưa có khoản chi nào 👆</p>
+      <div id="today-list" class="expense-list">
+        <p class="empty-state">Chưa có khoản chi nào</p>
       </div>
 
-      <!-- Nút thêm -->
-      <button class="fab" id="add-btn">＋</button>
+      <button class="fab" id="fab-add">＋</button>
     </div>
 
     <!-- TAB: TỔNG KẾT -->
-    <div id="tab-summary" class="tab-content">
-      <header class="page-header">
+    <div id="tab-summary" class="tab">
+      <div class="topbar">
+        <div style="width:40px"></div>
         <h2>Tổng kết</h2>
-      </header>
+        <div style="width:40px"></div>
+      </div>
       <div class="summary-grid">
-        <div class="summary-card">
-          <p class="summary-label">Tuần này</p>
-          <p class="summary-amount" id="week-total">0 ₫</p>
+        <div class="sum-card">
+          <p class="sum-lbl">Tuần này</p>
+          <p class="sum-amt" id="week-total">0 ₫</p>
         </div>
-        <div class="summary-card">
-          <p class="summary-label">Tháng này</p>
-          <p class="summary-amount" id="month-total">0 ₫</p>
+        <div class="sum-card">
+          <p class="sum-lbl">Tháng này</p>
+          <p class="sum-amt" id="month-total">0 ₫</p>
         </div>
-        <div class="summary-card wide">
-          <p class="summary-label">Năm nay</p>
-          <p class="summary-amount" id="year-total">0 ₫</p>
+        <div class="sum-card full">
+          <p class="sum-lbl">Năm nay</p>
+          <p class="sum-amt" id="year-total">0 ₫</p>
+        </div>
+        <div class="sum-card full" id="group-total-card" style="display:none">
+          <p class="sum-lbl" id="group-total-lbl">Tổng nhóm</p>
+          <p class="sum-amt" id="group-total">0 ₫</p>
         </div>
       </div>
     </div>
 
     <!-- TAB: LỊCH SỬ -->
-    <div id="tab-history" class="tab-content">
-      <header class="page-header">
+    <div id="tab-history" class="tab">
+      <div class="topbar">
+        <div style="width:40px"></div>
         <h2>Lịch sử</h2>
-      </header>
-      <div class="expense-list" id="history-list">
-        <p class="empty-state">Chưa có dữ liệu</p>
+        <div style="width:40px"></div>
       </div>
+      <div id="history-list" class="expense-list"></div>
     </div>
 
-  </div><!-- end main-screen -->
+  </div><!-- /screen-main -->
 
-  <!-- MODAL: THÊM / SỬA KHOẢN CHI -->
-  <div id="modal-overlay" class="modal-overlay hidden">
+  <!-- ====== MODAL THÊM/SỬA ====== -->
+  <div id="modal-bg" class="modal-bg hidden">
     <div class="modal">
-      <div class="modal-header">
-        <h3 id="modal-title">Thêm khoản chi</h3>
+      <div class="modal-head">
+        <h3 id="modal-title">Thêm chi tiêu</h3>
         <button id="modal-close">✕</button>
       </div>
 
-      <!-- Nhập số tiền -->
-      <label>Số tiền (₫)</label>
-      <input type="number" id="input-amount" placeholder="VD: 35000"
-             inputmode="numeric" min="0" />
+      <label class="field-lbl">Số tiền</label>
+      <div class="amount-wrap">
+        <input type="number" id="inp-amount" placeholder="35" inputmode="decimal" min="0" step="any" />
+        <span class="amount-unit">× 1.000 ₫</span>
+      </div>
+      <p class="amount-preview" id="amount-preview">= 0 ₫</p>
 
-      <!-- Chọn danh mục -->
-      <label>Danh mục</label>
-      <div class="category-picker" id="category-picker">
+      <label class="field-lbl">Danh mục</label>
+      <div class="cat-grid" id="cat-picker">
         <button class="cat-btn active" data-cat="food">🍜 Ăn uống</button>
         <button class="cat-btn" data-cat="transport">🛵 Di chuyển</button>
-        <button class="cat-btn" data-cat="shopping">🛍️ Mua sắm</button>
+        <button class="cat-btn" data-cat="shopping">🛍 Mua sắm</button>
         <button class="cat-btn" data-cat="entertainment">🎮 Giải trí</button>
         <button class="cat-btn" data-cat="other">📦 Khác</button>
       </div>
 
-      <!-- Ghi chú -->
-      <label>Ghi chú (tuỳ chọn)</label>
-      <input type="text" id="input-note" placeholder="VD: Cơm trưa văn phòng"
-             maxlength="100" />
+      <label class="field-lbl">Ghi chú <span style="font-weight:400;color:#aaa">(tuỳ chọn)</span></label>
+      <input type="text" id="inp-note" placeholder="VD: Cơm trưa" maxlength="80" />
 
-      <button class="btn-primary" id="save-btn">Lưu</button>
+      <button class="btn-save" id="btn-save">Lưu</button>
     </div>
   </div>
 
-  <!-- Load scripts -->
+  <!-- ====== MODAL TẠO NHÓM ====== -->
+  <div id="modal-group-bg" class="modal-bg hidden">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>Tạo nhóm mới</h3>
+        <button id="modal-group-close">✕</button>
+      </div>
+      <label class="field-lbl">Tên nhóm</label>
+      <input type="text" id="inp-group-name" placeholder="VD: Đà Lạt tháng 6" maxlength="40" />
+      <label class="field-lbl" style="margin-top:12px">Mô tả <span style="font-weight:400;color:#aaa">(tuỳ chọn)</span></label>
+      <input type="text" id="inp-group-desc" placeholder="VD: Chuyến đi với nhóm bạn" maxlength="60" />
+      <button class="btn-save" id="btn-save-group">Tạo nhóm</button>
+    </div>
+  </div>
+
   <script src="js/db.js"></script>
   <script src="js/app.js"></script>
 </body>
