@@ -298,12 +298,12 @@ async function openEdit(id) {
 function closeModal() { document.getElementById('modal-bg').classList.add('hidden'); editingId = null; }
 
 document.getElementById('btn-save').addEventListener('click', async () => {
-  const raw = parseFloat(document.getElementById('inp-amount').value);
+  const raw = parseInt(document.getElementById('inp-amount').value);
   if (isNaN(raw) || raw <= 0) { alert('Vui lòng nhập số tiền hợp lệ!'); return; }
   if (raw > 1_000_000) { alert('Số tiền quá lớn (tối đa 1.000.000 × 1000 = 1 tỷ)'); return; }
 
   // Nhân 1000 trước khi lưu
-  const amount = Math.round(raw * MULTIPLIER);
+  const amount = raw * MULTIPLIER;
   const note   = document.getElementById('inp-note').value.trim();
 
   if (editingId !== null) {

@@ -23,11 +23,11 @@ function openDB() {
 
 async function addExpense(expense) {
   const db = await openDB();
+  const encrypted = await encryptExpense(expense);
   return new Promise((resolve, reject) => {
-    const tx    = db.transaction(STORE_NAME, 'readwrite');
-    const store = tx.objectStore(STORE_NAME);
-    expense.date = new Date().toISOString();
-    const req = store.add(expense);
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    encrypted.date = new Date().toISOString();
+    const req = tx.objectStore(STORE_NAME).add(encrypted);
     req.onsuccess = () => resolve(req.result);
     req.onerror   = () => reject(req.error);
   });
@@ -38,8 +38,11 @@ async function getAllExpenses() {
   return new Promise((resolve, reject) => {
     const tx  = db.transaction(STORE_NAME, 'readonly');
     const req = tx.objectStore(STORE_NAME).getAll();
-    req.onsuccess = () => resolve(req.result);
-    req.onerror   = () => reject(req.error);
+    req.onsuccess = async () => {
+      const decrypted = await Promise.all(req.result.map(decryptExpense));
+      resolve(decrypted);
+    };
+    req.onerror = () => reject(req.error);
   });
 }
 
@@ -55,9 +58,10 @@ async function deleteExpense(id) {
 
 async function updateExpense(expense) {
   const db = await openDB();
+  const encrypted = await encryptExpense(expense);
   return new Promise((resolve, reject) => {
     const tx  = db.transaction(STORE_NAME, 'readwrite');
-    const req = tx.objectStore(STORE_NAME).put(expense);
+    const req = tx.objectStore(STORE_NAME).put(encrypted);
     req.onsuccess = () => resolve();
     req.onerror   = () => reject(req.error);
   });
@@ -68,16 +72,20 @@ async function getAllGroups() {
   return new Promise((resolve, reject) => {
     const tx  = db.transaction(GROUP_STORE, 'readonly');
     const req = tx.objectStore(GROUP_STORE).getAll();
-    req.onsuccess = () => resolve(req.result);
-    req.onerror   = () => reject(req.error);
+    req.onsuccess = async () => {
+      const decrypted = await Promise.all(req.result.map(decryptGroup));
+      resolve(decrypted);
+    };
+    req.onerror = () => reject(req.error);
   });
 }
 
 async function addGroup(group) {
   const db = await openDB();
+  const encrypted = await encryptGroup(group);
   return new Promise((resolve, reject) => {
     const tx  = db.transaction(GROUP_STORE, 'readwrite');
-    const req = tx.objectStore(GROUP_STORE).add(group);
+    const req = tx.objectStore(GROUP_STORE).add(encrypted);
     req.onsuccess = () => resolve(req.result);
     req.onerror   = () => reject(req.error);
   });
