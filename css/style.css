@@ -76,9 +76,14 @@ body {
 
 /* ── BOTTOM NAV ── */
 .bottom-nav {
-  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
-  width: 100%; max-width: 430px;
-  display: flex; background: var(--card);
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  display: flex;
+  background: var(--card);
   border-top: 1px solid rgba(0,0,0,0.08);
   padding-bottom: env(safe-area-inset-bottom);
   z-index: 100;

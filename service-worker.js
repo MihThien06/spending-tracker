@@ -1,26 +1,33 @@
-// service-worker.js — Cache app để dùng offline
-const CACHE_NAME = 'spending-tracker-v1';
-
-// Danh sách file cần cache
+const CACHE = 'chi-tieu-v2';
 const ASSETS = [
   '/',
   '/index.html',
   '/css/style.css',
+  '/js/crypto.js',
   '/js/db.js',
   '/js/app.js',
   '/manifest.json',
+  '/icons/icon-192.png'
 ];
 
-// Cài đặt: cache tất cả file
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(CACHE).then(c => c.addAll(ASSETS))
   );
+  self.skipWaiting();
 });
 
-// Khi fetch: dùng cache trước, fallback về network
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request).then(cached => cached || fetch(event.request))
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+    )
+  );
+  self.clients.claim();
+});
+
+self.addEventListener('fetch', e => {
+  e.respondWith(
+    caches.match(e.request).then(cached => cached || fetch(e.request))
   );
 });
